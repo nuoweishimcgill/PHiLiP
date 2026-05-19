@@ -76,8 +76,8 @@ const OptimizationProblemType optimization_problem_type = OptimizationProblemTyp
 //const OptimizationProblemType optimization_problem_type = OptimizationProblemType::lift_target;
 //const OptimizationProblemType optimization_problem_type = OptimizationProblemType::inverse_pressure_design;
 
-const std::vector<Preconditioner> precond_list { Preconditioner::P4A };
-//const std::vector<Preconditioner> precond_list { Preconditioner::P2, Preconditioner::P2A, Preconditioner::P4, Preconditioner::P4A };
+//const std::vector<Preconditioner> precond_list { Preconditioner::P4A };
+const std::vector<Preconditioner> precond_list { Preconditioner::P2, Preconditioner::P2A, Preconditioner::P4, Preconditioner::P4A };
 //const std::vector<OptimizationAlgorithm> opt_list { OptimizationAlgorithm::full_space_birosghattas, OptimizationAlgorithm::reduced_space_bfgs, OptimizationAlgorithm::reduced_space_newton };
 //const std::vector<OptimizationAlgorithm> opt_list { OptimizationAlgorithm::reduced_space_bfgs };
 //const std::vector<OptimizationAlgorithm> opt_list { OptimizationAlgorithm::reduced_sqp };
@@ -91,7 +91,7 @@ const std::vector<OptimizationAlgorithm> opt_list {
     };
 
 const unsigned int POLY_START = 0;
-const unsigned int POLY_END = 0; // Can do until at least P2
+const unsigned int POLY_END = 1; // Can do until at least P2
 
 //const unsigned int n_des_var_start = 10;//20;
 //const unsigned int n_des_var_end   = 40;//100;
@@ -106,7 +106,7 @@ const unsigned int POLY_END = 0; // Can do until at least P2
 //const std::vector<unsigned int> n_des_var_list { 5, 10, 15, 20, 25, 30, 35, 40 };//20;
 //const std::vector<unsigned int> n_des_var_list { 30, 35, 40 };//20;
 //const std::vector<unsigned int> n_des_var_list { 5 };
-const std::vector<unsigned int> n_des_var_list { 10 };
+const std::vector<unsigned int> n_des_var_list { 10, 20 };
 //const std::vector<unsigned int> n_des_var_list { 160, 320};//20;
 //const std::vector<unsigned int> n_des_var_list { 80, 160};//20;
 //const std::vector<unsigned int> n_des_var_list { 20, 40};//20;

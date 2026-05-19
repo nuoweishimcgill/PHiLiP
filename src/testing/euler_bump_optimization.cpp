@@ -42,7 +42,7 @@ enum BirosGhattasPreconditioner { P2, P2A, P4, P4A, identity };
 
 //const std::vector<BirosGhattasPreconditioner> precond_list { P2, P2A, P4, P4A };
 //const std::vector<OptimizationAlgorithm> opt_list { full_space_birosghattas, reduced_space_newton };
-const std::vector<BirosGhattasPreconditioner> precond_list { P2, P2A, P4, P4A };
+const std::vector<BirosGhattasPreconditioner> precond_list {P4A };
 const std::vector<OptimizationAlgorithm> opt_list { full_space_birosghattas, reduced_space_bfgs, reduced_space_newton };
 //const std::vector<OptimizationAlgorithm> opt_list { full_space_birosghattas };
 
@@ -53,12 +53,12 @@ const double CHANNEL_HEIGHT = 0.8;
 const unsigned int NY_CELL = 5;
 const unsigned int NX_CELL = 10*NY_CELL;
 
-const unsigned int POLY_START = 0;
+const unsigned int POLY_START = 1;
 const unsigned int POLY_END = 1; // Can do until at least P2
 
-const unsigned int n_des_var_start = 20;//20;
+const unsigned int n_des_var_start = 40;//20;
 const unsigned int n_des_var_end   = 40;//100; // Can do untill at least 100
-const unsigned int n_des_var_step  = 20;//20;
+const unsigned int n_des_var_step  = 40;//20;
 
 const int max_design_cycle = 1000;
 const int cg_iteration_limit = 200;
