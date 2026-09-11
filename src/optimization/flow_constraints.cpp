@@ -162,9 +162,9 @@ void FlowConstraints<dim>
         dg->high_order_grid->ensure_conforming_mesh();
         dg->high_order_grid->volume_nodes.update_ghost_values();
 
-        dg->output_results_vtk(iupdate);
-        ffd.output_ffd_vtu(iupdate);
-        output_restart_files(*dg, iupdate);
+        // dg->output_results_vtk(iupdate);
+        // ffd.output_ffd_vtu(iupdate);
+        // output_restart_files(*dg, iupdate);
         iupdate++;
     }
 }
@@ -209,8 +209,8 @@ void FlowConstraints<dim>
         //if (tol > 1e-12) {
             if (!same_as_previous) ode_solver_1->initialize_steady_polynomial_ramping (dg->max_degree);
             //if (!same_as_previous) ode_solver_1->steady_state();
-            dg->output_results_vtk(i_out++);
-            ffd.output_ffd_vtu(i_out);
+            // dg->output_results_vtk(i_out++);
+            // ffd.output_ffd_vtu(i_out);
         //}
         //if (!same_as_previous) ode_solver_1->steady_state();
         dg->assemble_residual();

@@ -205,19 +205,27 @@ void FullSpace_BirosGhattas<Real>::initialize(
 
     // Compute gradient of Lagrangian at new multiplier guess.
     ROL::Ptr<Vector<Real> > lagrangian_gradient = step_state->gradientVec->clone();
-    algo_state.gnorm = lagrangian_gradient->norm();
     computeLagrangianGradient(*lagrangian_gradient, design_variables, lagrange_mult, *(step_state->gradientVec), equal_constraints);
+    // ||grad L|| at the starting point (evaluated after forming grad L, not before).
+    algo_state.gnorm = lagrangian_gradient->norm();
     const auto &lagrangian_gradient_simopt = dynamic_cast<const Vector_SimOpt<Real>&>(*lagrangian_gradient);
     previous_reduced_gradient_ = lagrangian_gradient_simopt.get_2()->clone();
     algo_state.ngrad++;
+
+    // No step has been taken yet; make the iteration-0 row well defined.
+    algo_state.snorm = zero;
+    search_ctl_norm = 0.0;
+    search_sim_norm = 0.0;
+    search_adj_norm = 0.0;
+    n_linesearches = 0;
 
     //flow_constraint.flow_CFL_ = 1.0/std::pow(algo_state.cnorm, 0.5);
     //flow_constraint.flow_CFL_ = 1.0/std::pow(lagrangian_gradient->norm(), 1.00);
     //flow_constraint.flow_CFL_ = -std::max(1.0/std::pow(algo_state.cnorm, 2.0), 100.0);
     //flow_constraint.flow_CFL_ = -1e-0;
     flow_constraint.flow_CFL_ = -100;
-    flow_constraint.flow_CFL_ = -10000*std::max(1.0, 1.0/std::pow(algo_state.cnorm, 2.00));
-
+    //flow_constraint.flow_CFL_ = -10000*std::max(1.0, 1.0/std::pow(algo_state.cnorm, 2.00));
+    flow_constraint.flow_CFL_ = 10.0/std::pow(algo_state.cnorm, 2.0);
     // // Not sure why this is done in ROL_Step.hpp
     // if ( bound_constraints.isActivated() ) {
     //     ROL::Ptr<Vector<Real> > xnew = design_variables.clone();
@@ -624,8 +632,8 @@ void FullSpace_BirosGhattas<Real>::compute(
         equal_constraints,
         penalty_offset);
     const auto reduced_gradient = (dynamic_cast<Vector_SimOpt<Real>&>(*lagrangian_gradient)).get_2();
-    penalty_value_ = std::max(1e-0/reduced_gradient->norm(), 1.0);
-    //penalty_value_ = std::max(1e-2/lagrangian_gradient->norm(), 1.0);
+    //penalty_value_ = std::max(1e-0/reduced_gradient->norm(), 1.0);
+    penalty_value_ = std::max(1e-2/lagrangian_gradient->norm(), 1.0);
     pcout
         << "Finished computeAugmentedLagrangianPenalty..."
         << std::endl;
@@ -917,29 +925,26 @@ std::string FullSpace_BirosGhattas<Real>::print( AlgorithmState<Real> & algo_sta
   //if ( print_header ) {
     hist << printHeader();
   }
-  //hist << desc;
-  if ( algo_state.iter == 0 ) {
-    //hist << "\n";
-  }
-  else {
-    hist << std::setw(18) << std::left << algo_state.iter;
-    hist << std::setw(18) << std::left << algo_state.value;
-    hist << std::setw(18) << std::left << algo_state.gnorm;
-    hist << std::setw(18) << std::left << algo_state.cnorm;
-    hist << std::setw(18) << std::left << algo_state.snorm;
-    hist << std::setw(18) << std::left << search_ctl_norm;
-    hist << std::setw(18) << std::left << search_sim_norm;
-    hist << std::setw(18) << std::left << search_adj_norm;
-    hist << std::setw(18) << std::left << step_state->SPiter;
-    hist << std::setw(18) << std::left << step_state->nfval;
-    hist << std::setw(18) << std::left << step_state->ngrad;
-    hist << std::setw(18) << std::left << n_vmult;
-    hist << std::setw(18) << std::left << dRdW_form;
-    hist << std::setw(18) << std::left << dRdW_mult;
-    hist << std::setw(18) << std::left << dRdX_mult;
-    hist << std::setw(18) << std::left << d2R_mult;
-    hist << std::endl;
-  }
+  // Iteration 0 is the starting point (after initialize(), before any step):
+  // J, ||grad L|| and ||R|| are meaningful; step/KKT-related columns are zero.
+  const bool is_initial = (algo_state.iter == 0);
+  hist << std::setw(18) << std::left << algo_state.iter;
+  hist << std::setw(18) << std::left << algo_state.value;
+  hist << std::setw(18) << std::left << algo_state.gnorm;
+  hist << std::setw(18) << std::left << algo_state.cnorm;
+  hist << std::setw(18) << std::left << (is_initial ? 0.0 : algo_state.snorm);
+  hist << std::setw(18) << std::left << (is_initial ? 0.0 : search_ctl_norm);
+  hist << std::setw(18) << std::left << (is_initial ? 0.0 : search_sim_norm);
+  hist << std::setw(18) << std::left << (is_initial ? 0.0 : search_adj_norm);
+  hist << std::setw(18) << std::left << (is_initial ? 0 : step_state->SPiter);
+  hist << std::setw(18) << std::left << (is_initial ? 0 : step_state->nfval);
+  hist << std::setw(18) << std::left << (is_initial ? 0 : step_state->ngrad);
+  hist << std::setw(18) << std::left << n_vmult;
+  hist << std::setw(18) << std::left << dRdW_form;
+  hist << std::setw(18) << std::left << dRdW_mult;
+  hist << std::setw(18) << std::left << dRdX_mult;
+  hist << std::setw(18) << std::left << d2R_mult;
+  hist << std::endl;
   return hist.str();
 }
 

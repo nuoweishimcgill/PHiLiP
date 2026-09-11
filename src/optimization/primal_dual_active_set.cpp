@@ -88,8 +88,8 @@ namespace {
             penalty_value = 10.0/(gnorm);
         }
         penalty_value = penalty_value*penalty_value;
-        penalty_value = 10.0/gnorm;
-        //penalty_value = 1e-2/gnorm;
+        //penalty_value = 10.0/gnorm;
+        penalty_value = 1e-2/gnorm;
         //penalty_value = 1.0e+2;
         return penalty_value;
     }
@@ -931,7 +931,7 @@ void PrimalDualActiveSetStep<Real>::compute(
 {
 
     constexpr bool DO_LINESEARCH_IN_QP = false;
-    constexpr bool DO_USE_APPROXIMATE_PRECONDITIONER = true;
+    //constexpr bool DO_USE_APPROXIMATE_PRECONDITIONER = false;
     constexpr bool DO_USE_POWER_METHOD_SHIFT_EIGENVALUES = false;
     constexpr bool DO_PROJECT_DUAL_WITH_DESIGN = false;
 
@@ -1075,8 +1075,7 @@ void PrimalDualActiveSetStep<Real>::compute(
     //const Real identity_factor_ = std::sqrt(algo_state.gnorm) * 3.0;
     //const Real identity_factor_ = 1.0;//algo_state.gnorm * 3.0;
     //const Real identity_factor_ = 0.0;//std::min(algo_state.gnorm * algo_state.gnorm, 0.25) * 1000.0;
-    //const Real identity_factor_ = std::min(algo_state.gnorm * algo_state.gnorm, 0.25) * 100.0;//1000.0;
-    //const Real identity_factor_ = std::min(std::pow(algo_state.gnorm, 1.5), 0.25) * 100.0;//1000.0;
+    Real identity_factor = std::min(algo_state.gnorm * algo_state.gnorm, 0.25) * 100.0;    //const Real identity_factor_ = std::min(std::pow(algo_state.gnorm, 1.5), 0.25) * 100.0;//1000.0;
     //const Real identity_factor_ = std::min(std::pow(algo_state.gnorm, 1.5), 0.25) * 1000.0;//1000.0;
     //const Real identity_factor = std::min(std::pow(algo_state.gnorm, 1.0), 0.25) * 100.0;//1000.0;
     //const Real identity_factor_ = std::min(algo_state.gnorm, 0.25) * 300.0;//1000.0;
@@ -1088,7 +1087,7 @@ void PrimalDualActiveSetStep<Real>::compute(
     //Real identity_factor = std::min(std::pow(algo_state.gnorm, 2.0), 25.0) * 900000.0;//1000.0;
     //Real identity_factor = std::min(std::pow(algo_state.gnorm, 2.0), 25.0) * 10.0;//1000.0;
     //Real identity_factor = std::min(std::pow(algo_state.gnorm, 2.0), 25.0) * 30.0;//1000.0;
-    Real identity_factor = std::min(std::pow(algo_state.gnorm, 2.0), 25.0) * 1000.0;//1000.0;
+    //Real identity_factor = std::min(std::pow(algo_state.gnorm, 2.0), 25.0) * 1000.0;//1000.0;
     //identity_factor = std::min(std::pow(algo_state.gnorm, 1.0), 25.0) * 1000.0;//1000.0;
     //identity_factor = 0.0;
     //Real identity_factor = std::min(std::pow(algo_state.gnorm, 2.0), 25.0) * 1.0;//1000.0;
@@ -1277,7 +1276,9 @@ void PrimalDualActiveSetStep<Real>::compute(
             //auto &objective_simopt = dynamic_cast<ROL::Objective_SimOpt<Real> &>(*(slackless_objective.getObjective()));
             pcout << "Build PDAS_P24_Constrained_Preconditioner..." << std::endl;
             const bool use_second_order_terms = false;
-            const bool use_approximate_preconditioner = DO_USE_APPROXIMATE_PRECONDITIONER;
+            // const bool use_approximate_preconditioner = DO_USE_APPROXIMATE_PRECONDITIONER;
+            const std::string pname = parlist_.sublist("Full Space").get("Preconditioner", "P2A");
+            const bool use_approximate_preconditioner = (pname == "P2A");
             precond = ROL::makePtr<PDAS_P24_Constrained_Preconditioner<Real>>(
                 old_design_var_ptr,
                 //ROL::makePtrFromRef(objective_simopt),
@@ -2156,12 +2157,13 @@ void PrimalDualActiveSetStep<Real>::update(
         PHiLiP::FlowConstraints<PHILIP_DIM> &flow_constraints = dynamic_cast<PHiLiP::FlowConstraints<PHILIP_DIM>&>(*equality_constraints_partitioned.get(0));
         //flow_constraints.flow_CFL_ = -10.0*std::max(1.0, 1.0/std::pow(algo_state.cnorm, 1.50));
         //flow_constraints.flow_CFL_ = -10*std::max(1.0, 1.0/std::pow(algo_state.cnorm, 2.00));
-        flow_constraints.flow_CFL_ = -10000*std::max(1.0, 1.0/std::pow(algo_state.cnorm, 2.00));
-        flow_constraints.flow_CFL_ = -std::max(1.0, 1.0/std::pow(flowcnorm_, 1.25)) / 10000.0;
-        flow_constraints.flow_CFL_ = -std::max(1.0, 1.0/std::pow(flowcnorm_, 1.00)) / 100.0;
-        flow_constraints.flow_CFL_ = -std::max(1.0, 1.0/std::pow(flowcnorm_, 1.00)) / algo_state.gnorm * 100.0;
+        // flow_constraints.flow_CFL_ = -10000*std::max(1.0, 1.0/std::pow(algo_state.cnorm, 2.00));
+        // flow_constraints.flow_CFL_ = -std::max(1.0, 1.0/std::pow(flowcnorm_, 1.25)) / 10000.0;
+        // flow_constraints.flow_CFL_ = -std::max(1.0, 1.0/std::pow(flowcnorm_, 1.00)) / 100.0;
+        // flow_constraints.flow_CFL_ = -std::max(1.0, 1.0/std::pow(flowcnorm_, 1.00)) / algo_state.gnorm * 100.0;
         const double factor = std::pow(flowcnorm_, 1.00) * std::pow(algo_state.gnorm, 1.0) * 1.0;
         flow_constraints.flow_CFL_ = 1.0/std::min(factor, 0.25) * 10.0;//1000.0;
+        //flow_constraints.flow_CFL_ = 10.0/std::pow(flowcnorm_, 2.0);
         flow_cfl_ = flow_constraints.flow_CFL_;
     }
 
